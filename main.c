@@ -65,26 +65,30 @@ int message_process(char *topic, int topic_len, char *msg, int msg_len)
 	char msg_payload[DATA_MAXLEN];
 	char device_name[PARAM_MAXLEN] = "";
 	char data_item[PARAM_MAXLEN] = "";
-	
+	int actual_msg_len = 0;
+
 	if ((!msg) || (msg_len < 0))
 		return -EINVAL;
-	
-	if (msg_len > DATA_MAXLEN)
+
+	if (msg_len >= DATA_MAXLEN)
 		printf("WARNING: Received message is too long. Will trim\n");
-	
-	strncpy(msg_payload, msg, MIN(DATA_MAXLEN, msg_len));
-	msg_payload[DATA_MAXLEN - 1] = 0; /* Just in case */
+
+	actual_msg_len = MIN(DATA_MAXLEN - 1, msg_len);
+
+	strncpy(msg_payload, msg, actual_msg_len);
+	msg_payload[actual_msg_len] = 0;
 	msg_split(topic, device_name, data_item);
-	
+
 	printf("Message arrived\n");
 	printf("   topic  : %s\n", topic);
 	printf("   message: %s\n", msg_payload);
-	printf("   length: %d\n", msg_len);
 	printf("   device name: %s\n", device_name);
 	printf("   data item  : %s\n", data_item);
-	
+	printf("   length (received): %d\n", msg_len);
+	printf("   length (sent)    : %d\n", actual_msg_len);
+
 	agent_send_string(wra, data_item, msg_payload);
-	
+
 	return 0;
 }
 
